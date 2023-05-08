@@ -12,6 +12,7 @@ from sklearn.cluster import KMeans
 # загрузка модели
 from tensorflow.keras.models import load_model
 # для перевода скачанной картинки в grayscale
+from sklearn.cluster import KMeans
 import keras.utils as imag
 import numpy as np
 import cv2
@@ -78,37 +79,77 @@ class Color:
         color = [color]
         os.remove(f"{photo.file_id}.jpg")
 
-        print(color)
 
         # Интерпритация массива в название цвета
-        color_names = {
-            (0, 0, 0): "голубой",
-            (128, 128, 128): "серый",
-            (255, 0, 0): "красный",
-            (0, 128, 0): "зелёный",
-            (0, 0, 255): "синий",
-            (0, 255, 255): "чёрный",
-            (255, 255, 255): "белый",
-            (255, 165, 0): "оранжевый",
-            (255, 255, 0): "жёлтый",
-            (128, 0, 128): "фиолетовый",
-            (165, 42, 42): "коричневый",
-            (255, 192, 203): "розовый"
-        }
+        colors = np.array([
+            [0, 0, 0],
+            [255, 0, 0],
+            [0, 128, 0],
+            [0, 0, 255],
+            [0, 255, 255],
+            [255, 255, 255],
+            [255, 165, 0],
+            [255, 255, 0],
+            [128, 0, 128],
+            [255, 192, 203]
+        ])
 
-        # Задайте список цветов в формате RGB
-        colors = list(color_names.keys())
+        # color_names = {
+        #     (0, 0, 0): "чёрный",
+        #     (128, 128, 128): "серый",
+        #     (255, 0, 0): "красный",
+        #     (0, 128, 0): "зелёный",
+        #     (0, 0, 255): "синий",
+        #     (0, 255, 255): "голубой",
+        #     (255, 255, 255): "белый",
+        #     (255, 165, 0): "оранжевый",
+        #     (255, 255, 0): "жёлтый",
+        #     (128, 0, 128): "фиолетовый",
+        #     (165, 42, 42): "коричневый",
+        #     (255, 192, 203): "розовый"
+        # }
 
-        # Создайте объект KMeans с 10 кластерами (по количеству цветов)
-        kmeans = KMeans(n_clusters=12, random_state=0, n_init=100).fit(colors)
+        # color = np.array(color)
 
-        # Определите, к какому кластеру относится ваш цвет
+        # closest_color_index = np.argmin(np.linalg.norm(colors - color, axis=1))
+
+        # closest_color_name = color_names[tuple(colors[closest_color_index])]
+
+        # print("Ваш цвет похож на: ", closest_color_name)
+        kmeans = KMeans(n_clusters=10, random_state=0, n_init=10).fit(colors)
+
         predicted_label = kmeans.predict(color)
 
-        # Выведите наиболее близкий цвет
-        closest_color = colors[predicted_label[0]]
-        closest_color_name = color_names[closest_color]
+        # Нахождение ближайшего цвета по метке кластера
+        closest_color = kmeans.cluster_centers_[predicted_label][0]
 
-        return closest_color_name
+        def get_color_name(rgb):
+            if np.array_equal(rgb, [0, 0, 0]):
+                return "Черный"
+            elif np.array_equal(rgb, [255, 0, 0]):
+                return "Красный"
+            elif np.array_equal(rgb, [0, 128, 0]):
+                return "Зеленый"
+            elif np.array_equal(rgb, [0, 0, 255]):
+                return "Синий"
+            elif np.array_equal(rgb, [0, 255, 255]):
+                return "Голубой"
+            elif np.array_equal(rgb, [255, 255, 255]):
+                return "Белый"
+            elif np.array_equal(rgb, [255, 165, 0]):
+                return "Оранжевый"
+            elif np.array_equal(rgb, [255, 255, 0]):
+                return "Желтый"
+            elif np.array_equal(rgb, [128, 0, 128]):
+                return "Фиолетовый"
+            elif np.array_equal(rgb, [255, 192, 203]):
+                return "Розовый"
+            else:
+                return "Неизвестный"
+            
+        return(get_color_name(closest_color))
+
+
+        # return closest_color_name
 # print(predict.fashion("2.jpg"))
 # print(color.f("2.jpg"))
